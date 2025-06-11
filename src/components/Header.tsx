@@ -259,7 +259,7 @@ const Header: React.FC = () => {
               {/* Certificate Image Container */}
               <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-8 text-center">
                 <img
-                  src="/kroa-certificate.jpg"
+                  src="/public/kroa-certificate.jpg"
                   alt="KROA Membership Certificate"
                   className="max-w-full max-h-96 mx-auto object-contain rounded-lg shadow-lg"
                   onError={(e) => {
