@@ -10,7 +10,7 @@ const Gallery: React.FC = () => {
   const images = [
     {
       id: 1,
-      src: '/public/1.png',
+      src: '/1.png', 
       category: 'drilling',
       title: 'Borewell Drilling Operation'
     },
