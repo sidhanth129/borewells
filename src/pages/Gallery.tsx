@@ -16,49 +16,49 @@ const Gallery: React.FC = () => {
     },
     {
       id: 2,
-      src: '/public/2.png',
+      src: '/2.png',
       category: 'equipment',
       title: 'Professional Equipment'
     },
     {
       id: 3,
-      src: '/public/3.png',
+      src: '/3.png',
       category: 'drilling',
       title: 'Deep Drilling Process'
     },
     {
       id: 4,
-      src: '/public/office.png',
+      src: '/office.png',
       category: 'flushing',
       title: 'Borewell Flushing'
     },
     {
       id: 5,
-      src: '/public/lorry.png',
+      src: '/lorry.png',
       category: 'installation',
       title: 'Pump Installation'
     },
     {
       id: 6,
-      src: '/public/6.png',
+      src: '/6.png',
       category: 'drilling',
       title: 'Site Preparation'
     },
     {
       id: 7,
-      src: "/public/jd.png",
+      src: '/jd.png',
       category: 'equipment',
       title: 'Modern Tools'
     },
     {
       id: 8,
-      src: "/public/domestic.png",
+      src: '/domestic.png',
       category: 'installation',
       title: 'Casing Installation'
     },
     {
       id: 9,
-      src:"/public/oar2.jpg",
+      src:"/oar2.jpg",
       category: 'flushing',
       title: 'Water Testing'
     }
