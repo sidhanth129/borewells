@@ -211,7 +211,7 @@ const Home: React.FC = () => {
                 transition={{ duration: 0.3 }}
               >
                 <img
-                  src="/public/owner.png"
+                  src="/owner.png"
                   alt="Mr. Jagannath B.S. - Owner of Shrinidhi Borewells"
                   className="w-full h-full object-cover"
                   onError={(e) => {
