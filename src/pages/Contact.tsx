@@ -81,8 +81,12 @@ const Contact: React.FC = () => {
 
       // Call the edge function to send email
       try {
-        const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-contact-email', {
-          body: contactData
+        const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
+          body: {
+            ...contactData,
+            contactId: data.id,
+            submittedAt: data.created_at
+          }
         });
 
         if (emailError) {
