@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { supabase, type ContactInsert } from '../lib/supabase';
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -19,38 +20,97 @@ const Contact: React.FC = () => {
     }));
   };
 
+  const validateForm = (data: typeof formData): string | null => {
+    if (!data.name || data.name.trim().length < 2) {
+      return 'Name must be at least 2 characters long';
+    }
+    
+    if (!data.phone || !/^\d{10}$/.test(data.phone.replace(/\D/g, ''))) {
+      return 'Please provide a valid 10-digit phone number';
+    }
+    
+    if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+      return 'Please provide a valid email address';
+    }
+    
+    if (!data.message || data.message.trim().length < 10) {
+      return 'Message must be at least 10 characters long';
+    }
+    
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('loading');
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setStatus('success');
-        setStatusMessage('Thank you! Your message has been sent successfully.');
-        setFormData({ name: '', phone: '', email: '', message: '' });
-      } else {
+      // Validate form data
+      const validationError = validateForm(formData);
+      if (validationError) {
         setStatus('error');
-        setStatusMessage(result.message || 'Something went wrong. Please try again.');
+        setStatusMessage(validationError);
+        setTimeout(() => {
+          setStatus('idle');
+          setStatusMessage('');
+        }, 5000);
+        return;
       }
+
+      // Prepare data for insertion
+      const contactData: ContactInsert = {
+        name: formData.name.trim(),
+        phone: formData.phone.replace(/\D/g, ''),
+        email: formData.email.trim().toLowerCase(),
+        message: formData.message.trim(),
+      };
+
+      // Insert into Supabase
+      const { data, error } = await supabase
+        .from('contacts')
+        .insert([contactData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        setStatus('error');
+        setStatusMessage('Failed to submit your message. Please try again or contact us directly.');
+        return;
+      }
+
+      // Call the edge function to send email
+      try {
+        const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-contact-email', {
+          body: contactData
+        });
+
+        if (emailError) {
+          console.error('Email function error:', emailError);
+          // Don't fail the whole process if email fails, as data is already saved
+        }
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Continue as data is saved
+      }
+
+      setStatus('success');
+      setStatusMessage('Thank you! Your message has been sent successfully. We will get back to you soon.');
+      setFormData({ name: '', phone: '', email: '', message: '' });
+
+      // Log success for debugging
+      console.log('Contact form submitted successfully:', data);
+
     } catch (error) {
+      console.error('Contact form error:', error);
       setStatus('error');
-      setStatusMessage('Network error. Please check your connection and try again.');
+      setStatusMessage('Sorry, there was an error sending your message. Please try again or contact us directly.');
     }
 
     setTimeout(() => {
       setStatus('idle');
       setStatusMessage('');
-    }, 5000);
+    }, 8000);
   };
 
   return (
