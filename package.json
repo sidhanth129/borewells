@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "node server/index.js"
+    "server": "node server/contact.js"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",
@@ -21,6 +21,7 @@
     "nodemailer": "^6.9.7",
     "helmet": "^7.1.0",
     "express-rate-limit": "^7.1.5",
+    "dotenv": "^16.3.1",
     "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {

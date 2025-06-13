@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
-import { supabase, type ContactInsert } from '../lib/supabase';
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -57,58 +56,49 @@ const Contact: React.FC = () => {
         return;
       }
 
-      // Prepare data for insertion
-      const contactData: ContactInsert = {
+      // Prepare data for submission
+      const contactData = {
         name: formData.name.trim(),
         phone: formData.phone.replace(/\D/g, ''),
         email: formData.email.trim().toLowerCase(),
         message: formData.message.trim(),
       };
 
-      // Insert into Supabase
-      const { data, error } = await supabase
-        .from('contacts')
-        .insert([contactData])
-        .select()
-        .single();
+      // Send to backend API
+      const response = await fetch('http://localhost:3001/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactData),
+      });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        setStatus('error');
-        setStatusMessage('Failed to submit your message. Please try again or contact us directly.');
-        return;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to send message');
       }
 
-      // Call the edge function to send email
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
-          body: {
-            ...contactData,
-            contactId: data.id,
-            submittedAt: data.created_at
-          }
-        });
-
-        if (emailError) {
-          console.error('Email function error:', emailError);
-          // Don't fail the whole process if email fails, as data is already saved
-        }
-      } catch (emailError) {
-        console.error('Email sending failed:', emailError);
-        // Continue as data is saved
+      if (result.success) {
+        setStatus('success');
+        setStatusMessage(result.message || 'Thank you! Your message has been sent successfully. We will get back to you soon.');
+        setFormData({ name: '', phone: '', email: '', message: '' });
+        
+        // Log success for debugging
+        console.log('Contact form submitted successfully');
+      } else {
+        throw new Error(result.message || 'Failed to send message');
       }
-
-      setStatus('success');
-      setStatusMessage('Thank you! Your message has been sent successfully. We will get back to you soon.');
-      setFormData({ name: '', phone: '', email: '', message: '' });
-
-      // Log success for debugging
-      console.log('Contact form submitted successfully:', data);
 
     } catch (error) {
       console.error('Contact form error:', error);
       setStatus('error');
-      setStatusMessage('Sorry, there was an error sending your message. Please try again or contact us directly.');
+      
+      if (error.message.includes('fetch')) {
+        setStatusMessage('Unable to connect to the server. Please make sure the backend server is running or try again later.');
+      } else {
+        setStatusMessage(error.message || 'Sorry, there was an error sending your message. Please try again or contact us directly.');
+      }
     }
 
     setTimeout(() => {
